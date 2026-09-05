@@ -478,6 +478,36 @@
         </div>
       </div>
       <div id="updateStatusMsg" style="font-size:0.85rem; font-weight:700; margin-top:12px; color:var(--ather-mint);"></div>
+
+      <div style="border-top:1px solid var(--border); margin-top:20px; padding-top:20px;">
+        <h2 style="color:var(--warning); margin-bottom:8px;">Bulk Attendance Update</h2>
+        <small style="display:block; color:var(--ather-light-gray); margin-bottom:14px;">Apply one status to every employee for a selected day range.</small>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:end;">
+          <div>
+            <label>From Day</label>
+            <input type="number" id="bulkStartDay" min="1" max="31" placeholder="1">
+          </div>
+          <div>
+            <label>To Day</label>
+            <input type="number" id="bulkEndDay" min="1" max="31" placeholder="31">
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="bulkStatusCode">
+              <option value="-">- (Blank / Reset)</option>
+              <option value="P">P (Present)</option>
+              <option value="PL">PL (Planned Leave)</option>
+              <option value="DHL">DHL (Duty / Half Leave)</option>
+              <option value="PER">PER (Permission)</option>
+              <option value="HOL">HOL (Company Holiday)</option>
+              <option value="A">A (Absent)</option>
+              <option value="W/o">W/o (Week Off)</option>
+            </select>
+          </div>
+          <button class="ather-btn" style="width:auto; background:var(--warning);" onclick="submitBulkAttendanceUpdate()">Apply to All</button>
+        </div>
+        <div id="bulkUpdateStatusMsg" style="font-size:0.85rem; font-weight:700; margin-top:12px;"></div>
+      </div>
     </div>
 
     <!-- OVERALL TEAM CALENDAR GRID -->
@@ -943,6 +973,40 @@
         loadTeamAttendanceStats();
         loadAnalyticsData();
       }).updateDailyAttendance(month, empId, day, status);
+    }
+
+    function submitBulkAttendanceUpdate() {
+      var month = document.getElementById("editMonthSheet").value;
+      var startDay = Number(document.getElementById("bulkStartDay").value);
+      var endDay = Number(document.getElementById("bulkEndDay").value);
+      var status = document.getElementById("bulkStatusCode").value;
+      var msgDiv = document.getElementById("bulkUpdateStatusMsg");
+
+      if (!Number.isInteger(startDay) || !Number.isInteger(endDay) || startDay < 1 || endDay > 31 || startDay > endDay) {
+        msgDiv.innerText = "Enter a valid day range from 1 to 31.";
+        msgDiv.style.color = "var(--danger)";
+        return;
+      }
+
+      if (!confirm("Apply status '" + status + "' to every employee from Day " + startDay + " to Day " + endDay + "?")) return;
+
+      msgDiv.innerText = "Applying bulk update...";
+      msgDiv.style.color = "var(--warning)";
+      google.script.run
+        .withSuccessHandler(function(res) {
+          msgDiv.innerText = res.message;
+          msgDiv.style.color = res.success ? "var(--ather-mint)" : "var(--danger)";
+          if (res.success) {
+            loadOverallTeamCalendar();
+            loadTeamAttendanceStats();
+            loadAnalyticsData();
+          }
+        })
+        .withFailureHandler(function(error) {
+          msgDiv.innerText = "Bulk update failed: " + error.message;
+          msgDiv.style.color = "var(--danger)";
+        })
+        .updateBulkAttendance(month, startDay, endDay, status);
     }
 
     function openCellModal(empName, empId, day, currentStatus) {

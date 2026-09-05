@@ -239,6 +239,58 @@ function updateDailyAttendance(monthSheetName, empId, targetDay, newStatus) {
   });
 }
 
+// Bulk attendance update for all employee rows in a day range.
+function updateBulkAttendance(monthSheetName, startDay, endDay, newStatus) {
+  monthSheetName = normalizeText_(monthSheetName);
+  startDay = Number(startDay);
+  endDay = Number(endDay);
+  newStatus = normalizeText_(newStatus);
+
+  if (!monthSheetName) return { success: false, message: "Month sheet is required." };
+  if (!Number.isInteger(startDay) || !Number.isInteger(endDay) || startDay < 1 || endDay > 31 || startDay > endDay) {
+    return { success: false, message: "Enter a valid day range from 1 to 31." };
+  }
+  if (!isAllowedStatus_(newStatus)) return { success: false, message: "Invalid attendance status." };
+
+  return withSheetLock_(function() {
+    var sheet = getSpreadsheet_().getSheetByName(monthSheetName);
+    if (!sheet) return { success: false, message: "Tab '" + monthSheetName + "' not found." };
+
+    var range = sheet.getDataRange();
+    var data = range.getValues();
+    if (!data.length) return { success: false, message: "The month sheet is empty." };
+
+    var headers = data[0];
+    var dayColumns = {};
+    for (var col = 3; col < headers.length; col++) {
+      var day = Number(headers[col]);
+      if (Number.isInteger(day)) dayColumns[day] = col;
+    }
+
+    var selectedColumns = [];
+    for (var currentDay = startDay; currentDay <= endDay; currentDay++) {
+      if (dayColumns[currentDay] !== undefined) selectedColumns.push(dayColumns[currentDay]);
+    }
+    if (!selectedColumns.length) return { success: false, message: "No matching day columns found." };
+
+    var updatedRows = 0;
+    for (var row = 1; row < data.length; row++) {
+      if (!normalizeEmployeeId_(data[row][0])) continue;
+      selectedColumns.forEach(function(column) {
+        data[row][column] = newStatus;
+      });
+      updatedRows++;
+    }
+
+    if (updatedRows) range.setValues(data);
+    SpreadsheetApp.flush();
+    return {
+      success: true,
+      message: "Updated " + updatedRows + " employee(s) for day " + startDay + "-" + endDay + " to '" + newStatus + "'."
+    };
+  });
+}
+
 // 8. Fetch Single Employee Calendar
 function getCalendarData(empId, monthSheetName) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
