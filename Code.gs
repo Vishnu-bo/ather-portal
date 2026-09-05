@@ -1,10 +1,53 @@
-// Dynamic PIN stored in Script Properties with fallback
+var ALLOWED_ATTENDANCE_STATUSES = ["P", "PL", "DHL", "PER", "HOL", "A", "W/O", "W-O", "-"];
+
+function getSpreadsheet_() {
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function normalizeText_(value) {
+  return value === null || value === undefined ? "" : String(value).trim();
+}
+
+function normalizeEmployeeId_(value) {
+  return normalizeText_(value).toUpperCase();
+}
+
+function findEmployeeRow_(sheet, empId) {
+  if (!sheet || sheet.getLastRow() < 2) return -1;
+  var targetId = normalizeEmployeeId_(empId);
+  if (!targetId) return -1;
+
+  var values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getDisplayValues();
+  for (var i = 0; i < values.length; i++) {
+    if (normalizeEmployeeId_(values[i][0]) === targetId) return i + 2;
+  }
+  return -1;
+}
+
+function isAllowedStatus_(status) {
+  return ALLOWED_ATTENDANCE_STATUSES.indexOf(normalizeText_(status).toUpperCase()) !== -1;
+}
+
+function withSheetLock_(callback) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    return callback();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// PIN is stored in Script Properties. Configure ADMIN_PIN before deployment.
 function getAdminPin() {
-  var prop = PropertiesService.getScriptProperties().getProperty("ADMIN_PIN");
-  return prop ? prop : "admin123";
+  return PropertiesService.getScriptProperties().getProperty("ADMIN_PIN") || "";
 }
 
 function setAdminPin(newPin) {
+  newPin = normalizeText_(newPin);
+  if (newPin.length < 6 || newPin.length > 64) {
+    return "PIN must contain between 6 and 64 characters.";
+  }
   PropertiesService.getScriptProperties().setProperty("ADMIN_PIN", newPin);
   return "Admin passcode updated successfully!";
 }
@@ -18,11 +61,15 @@ function doGet() {
 // 1. Role-based Login & PIN Verification
 function loginUser(role, pin, empId) {
   if (role === "admin") {
-    return pin === getAdminPin() ? { success: true, role: "admin" } : { success: false, message: "Invalid Admin Passcode!" };
+    var configuredPin = getAdminPin();
+    if (!configuredPin) return { success: false, message: "Admin PIN is not configured. Contact the administrator." };
+    return normalizeText_(pin) === configuredPin ? { success: true, role: "admin" } : { success: false, message: "Invalid Admin Passcode!" };
   } else if (role === "employee") {
+    if (!normalizeEmployeeId_(empId)) return { success: false, message: "Enter your Employee ID." };
     var details = getEmployeeDetails(empId);
     return details.found ? { success: true, role: "employee", empId: empId, name: details.name, email: details.email } : { success: false, message: "Emp ID not found in Master Sheet!" };
   }
+  return { success: false, message: "Invalid login role." };
 }
 
 // Helper: Check if day is Sunday
@@ -52,7 +99,10 @@ function isSunday(dayNum, monthSheetName) {
 
 // 2. Lookup Employee Details (ID in Col A, Name in Col B)
 function getEmployeeDetails(empId) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Master Sheet");
+  empId = normalizeEmployeeId_(empId);
+  if (!empId) return { found: false, name: '', email: '' };
+
+  var sheet = getSpreadsheet_().getSheetByName("Master Sheet");
   if (!sheet) return { found: false, name: '', email: '' };
   
   var lastRow = sheet.getLastRow();
@@ -60,7 +110,7 @@ function getEmployeeDetails(empId) {
 
   var data = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
   for (var i = 0; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().trim().toUpperCase() === empId.toString().trim().toUpperCase()) {
+    if (normalizeEmployeeId_(data[i][0]) === empId) {
       return { found: true, name: data[i][1], email: "" };
     }
   }
@@ -97,52 +147,46 @@ function getFullEmployeeRecords() {
 
 // 4. Add New Employee to Master Sheet
 function addEmployee(data) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Master Sheet");
-  if (!sheet) return { success: false, message: "Master Sheet tab not found!" };
+  data = data || {};
+  var empId = normalizeText_(data.empId);
+  var name = normalizeText_(data.name);
+  if (!empId || !name) return { success: false, message: "Employee ID and name are required." };
+  if (empId.length > 50 || name.length > 100) return { success: false, message: "Employee ID or name is too long." };
 
-  var lastRow = sheet.getLastRow();
-  if (lastRow >= 2) {
-    var existing = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-    for (var i = 0; i < existing.length; i++) {
-      if (existing[i][0] && existing[i][0].toString().trim().toUpperCase() === data.empId.toString().trim().toUpperCase()) {
-        return { success: false, message: "Employee ID (" + data.empId + ") already exists!" };
-      }
+  return withSheetLock_(function() {
+    var sheet = getSpreadsheet_().getSheetByName("Master Sheet");
+    if (!sheet) return { success: false, message: "Master Sheet tab not found!" };
+    if (findEmployeeRow_(sheet, empId) !== -1) {
+      return { success: false, message: "Employee ID (" + empId + ") already exists!" };
     }
-  }
 
-  sheet.appendRow([
-    data.empId,
-    data.name,
-    data.contractName,
-    data.staying,
-    data.nativePlace,
-    data.doj,
-    data.ph,
-    data.reportingManager
-  ]);
-
-  return { success: true, message: "Employee " + data.name + " (" + data.empId + ") added successfully!" };
+    sheet.appendRow([
+      empId,
+      name,
+      normalizeText_(data.contractName),
+      normalizeText_(data.staying),
+      normalizeText_(data.nativePlace),
+      normalizeText_(data.doj),
+      normalizeText_(data.ph),
+      normalizeText_(data.reportingManager)
+    ]);
+    return { success: true, message: "Employee " + name + " (" + empId + ") added successfully!" };
+  });
 }
 
 // 5. Remove Employee from Master Sheet
 function removeEmployee(empId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Master Sheet");
-  if (!sheet) return { success: false, message: "Master Sheet tab not found!" };
+  empId = normalizeText_(empId);
+  if (!empId) return { success: false, message: "Employee ID is required." };
 
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return { success: false, message: "No data in Master Sheet." };
-
-  var data = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-  for (var i = 0; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().trim().toUpperCase() === empId.toString().trim().toUpperCase()) {
-      sheet.deleteRow(i + 2);
-      return { success: true, message: "Employee " + empId + " removed successfully!" };
-    }
-  }
-
-  return { success: false, message: "Employee ID " + empId + " not found." };
+  return withSheetLock_(function() {
+    var sheet = getSpreadsheet_().getSheetByName("Master Sheet");
+    if (!sheet) return { success: false, message: "Master Sheet tab not found!" };
+    var row = findEmployeeRow_(sheet, empId);
+    if (row === -1) return { success: false, message: "Employee ID " + empId + " not found." };
+    sheet.deleteRow(row);
+    return { success: true, message: "Employee " + empId + " removed successfully!" };
+  });
 }
 
 // 6. Master Employee List Dropdown Helper
@@ -153,7 +197,15 @@ function getMasterEmployeeList() {
 
 // 7. Update Daily Attendance directly in Month Sheet
 function updateDailyAttendance(monthSheetName, empId, targetDay, newStatus) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  monthSheetName = normalizeText_(monthSheetName);
+  empId = normalizeText_(empId);
+  targetDay = normalizeText_(targetDay);
+  newStatus = normalizeText_(newStatus);
+  if (!monthSheetName || !empId || !targetDay) return "Error: Month, employee, and day are required.";
+  if (!/^\d{1,2}$/.test(targetDay) || Number(targetDay) < 1 || Number(targetDay) > 31) return "Error: Day must be between 1 and 31.";
+  if (!isAllowedStatus_(newStatus)) return "Error: Invalid attendance status.";
+
+  var ss = getSpreadsheet_();
   var sheet = ss.getSheetByName(monthSheetName);
   if (!sheet) return "Error: Tab '" + monthSheetName + "' not found.";
 
@@ -180,8 +232,11 @@ function updateDailyAttendance(monthSheetName, empId, targetDay, newStatus) {
 
   if (rowIndex === -1) return "Error: Emp ID " + empId + " not found.";
 
-  sheet.getRange(rowIndex, colIndex + 1).setValue(newStatus);
-  return "Attendance for " + empId + " on Day " + targetDay + " updated to '" + newStatus + "'!";
+  return withSheetLock_(function() {
+    sheet.getRange(rowIndex, colIndex + 1).setValue(newStatus);
+    SpreadsheetApp.flush();
+    return "Attendance for " + empId + " on Day " + targetDay + " updated to '" + newStatus + "'!";
+  });
 }
 
 // 8. Fetch Single Employee Calendar
@@ -325,17 +380,29 @@ function getAllEmployeesAttendanceStats(monthSheetName) {
 
 // 11. Submit Request
 function submitRequest(formData) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var targetSheetName = formData.requestType === "Leave" ? "Leave Requests" : "Permission Requests";
-  var sheet = ss.getSheetByName(targetSheetName);
-  
-  if (!sheet) {
-    sheet = ss.insertSheet(targetSheetName);
-    sheet.appendRow(["Timestamp", "Emp ID", "Name", "Type", "Start Date", "End Date", "Reason", "Status"]);
-  }
-  
-  sheet.appendRow([new Date(), formData.empId, formData.empName, formData.requestType, formData.startDate, formData.endDate, formData.reason, "Pending"]);
-  return "Request submitted successfully!";
+  formData = formData || {};
+  var empId = normalizeText_(formData.empId);
+  var empName = normalizeText_(formData.empName);
+  var requestType = normalizeText_(formData.requestType);
+  var startDate = normalizeText_(formData.startDate);
+  var endDate = normalizeText_(formData.endDate);
+  var reason = normalizeText_(formData.reason);
+  if (!empId || !empName || !startDate || !endDate || !reason) return "Error: Complete all request fields.";
+  if (["Leave", "Permission"].indexOf(requestType) === -1) return "Error: Invalid request type.";
+  if (reason.length > 500) return "Error: Reason must be 500 characters or fewer.";
+  if (new Date(startDate).getTime() > new Date(endDate).getTime()) return "Error: End time must be after start time.";
+
+  var ss = getSpreadsheet_();
+  var targetSheetName = requestType === "Leave" ? "Leave Requests" : "Permission Requests";
+  return withSheetLock_(function() {
+    var sheet = ss.getSheetByName(targetSheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(targetSheetName);
+      sheet.appendRow(["Timestamp", "Emp ID", "Name", "Type", "Start Date", "End Date", "Reason", "Status"]);
+    }
+    sheet.appendRow([new Date(), empId, empName, requestType, startDate, endDate, reason, "Pending"]);
+    return "Request submitted successfully!";
+  });
 }
 
 // 12. Fetch Pending Requests
@@ -369,12 +436,21 @@ function getPendingRequests() {
 
 // 13. Process Approval
 function processApproval(sheetName, rowIndex, status) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  sheetName = normalizeText_(sheetName);
+  status = normalizeText_(status);
+  rowIndex = Number(rowIndex);
+  if (["Approved", "Rejected"].indexOf(status) === -1) return "Error: Invalid approval status.";
+  if (!Number.isInteger(rowIndex) || rowIndex < 2) return "Error: Invalid request row.";
+
+  var ss = getSpreadsheet_();
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet) return "Error: Sheet Tab Disconnected";
-  
-  sheet.getRange(rowIndex, 8).setValue(status);
-  return "Status updated to " + status.toUpperCase();
+  if (rowIndex > sheet.getLastRow()) return "Error: Request row not found.";
+
+  return withSheetLock_(function() {
+    sheet.getRange(rowIndex, 8).setValue(status);
+    return "Status updated to " + status.toUpperCase();
+  });
 }
 
 // 14. Admin Analytics
