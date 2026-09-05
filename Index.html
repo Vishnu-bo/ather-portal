@@ -150,7 +150,7 @@
 
     .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; cursor: pointer; transition: transform 0.1s; }
     .badge:hover { transform: scale(1.1); }
-    .badge-P, .badge-DHL { background: rgba(0, 210, 106, 0.15); color: var(--ather-mint); border: 1px solid var(--ather-mint); }
+    .badge-P, .badge-DHL, .badge-OD, .badge-HD { background: rgba(0, 210, 106, 0.15); color: var(--ather-mint); border: 1px solid var(--ather-mint); }
     .badge-PL { background: rgba(255, 68, 153, 0.2); color: var(--pink); border: 1px solid var(--pink); }
     .badge-A, .badge-L { background: rgba(255, 66, 66, 0.15); color: var(--danger); border: 1px solid var(--danger); }
     .badge-PER { background: rgba(0, 178, 255, 0.15); color: var(--info); border: 1px solid var(--info); }
@@ -234,6 +234,8 @@
           <option value="P">P (Present)</option>
           <option value="PL">PL (Planned Leave)</option>
           <option value="DHL">DHL (Duty / Half Leave)</option>
+          <option value="OD">OD (On Duty)</option>
+          <option value="HD">HD (Half Day)</option>
           <option value="PER">PER (Permission)</option>
           <option value="HOL">HOL (Company Holiday)</option>
           <option value="A">A (Absent)</option>
@@ -416,6 +418,8 @@
             <option value="P">P (Present)</option>
             <option value="PL">PL (Planned Leave)</option>
             <option value="DHL">DHL (Duty / Half Leave)</option>
+            <option value="OD">OD (On Duty)</option>
+            <option value="HD">HD (Half Day)</option>
             <option value="PER">PER (Permission)</option>
             <option value="HOL">HOL (Company Holiday)</option>
             <option value="A">A (Absent)</option>
@@ -466,6 +470,8 @@
             <option value="P">P (Present)</option>
             <option value="PL">PL (Planned Leave)</option>
             <option value="DHL">DHL (Duty / Half Leave)</option>
+            <option value="OD">OD (On Duty)</option>
+            <option value="HD">HD (Half Day)</option>
             <option value="PER">PER (Permission)</option>
             <option value="HOL">HOL (Company Holiday)</option>
             <option value="A">A (Absent)</option>
@@ -1084,7 +1090,7 @@
           if (rawStatus && rawStatus !== "") {
             displayTag = rawStatus;
             var cleanTag = rawStatus.toUpperCase().replace("/", "-");
-            if (["P", "PL", "DHL", "A", "L", "PER", "HOL", "WO", "W-O"].includes(cleanTag)) {
+            if (["P", "PL", "DHL", "OD", "HD", "A", "L", "PER", "HOL", "WO", "W-O"].includes(cleanTag)) {
               badgeClass = "badge-" + cleanTag;
             } else {
               badgeClass = "badge-DEFAULT";
@@ -1121,7 +1127,7 @@
           res.days.forEach(day => {
             var raw = row.dailyStatus[day] || "-";
             var cleanTag = raw.toUpperCase().replace("/", "-");
-            var badgeClass = ["P", "PL", "DHL", "A", "L", "PER", "HOL", "WO", "W-O"].includes(cleanTag) ? "badge-" + cleanTag : (raw !== "-" ? "badge-DEFAULT" : "badge-EMPTY");
+            var badgeClass = ["P", "PL", "DHL", "OD", "HD", "A", "L", "PER", "HOL", "WO", "W-O"].includes(cleanTag) ? "badge-" + cleanTag : (raw !== "-" ? "badge-DEFAULT" : "badge-EMPTY");
             
             var safeName = row.empName.replace(/'/g, "\\'");
             html += `<td><span class="badge ${badgeClass}" onclick="openCellModal('${safeName}', '${row.empId}', '${day}', '${raw}')">${raw}</span></td>`;

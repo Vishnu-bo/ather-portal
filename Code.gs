@@ -1,4 +1,4 @@
-var ALLOWED_ATTENDANCE_STATUSES = ["P", "PL", "DHL", "PER", "HOL", "A", "W/O", "W-O", "-"];
+var ALLOWED_ATTENDANCE_STATUSES = ["P", "PL", "DHL", "OD", "HD", "PER", "HOL", "A", "W/O", "W-O", "-"];
 
 function getSpreadsheet_() {
   return SpreadsheetApp.getActiveSpreadsheet();
@@ -26,6 +26,14 @@ function findEmployeeRow_(sheet, empId) {
 
 function isAllowedStatus_(status) {
   return ALLOWED_ATTENDANCE_STATUSES.indexOf(normalizeText_(status).toUpperCase()) !== -1;
+}
+
+function isPresentStatus_(status) {
+  return ["P", "DHL", "OD", "HD"].indexOf(normalizeText_(status).toUpperCase()) !== -1;
+}
+
+function isNonWorkingStatus_(status) {
+  return ["W/O", "W-O", "HOL", "-", ""].indexOf(normalizeText_(status).toUpperCase()) !== -1;
 }
 
 function withSheetLock_(callback) {
@@ -327,9 +335,9 @@ function getCalendarData(empId, monthSheetName) {
       var cleanVal = cellVal.toUpperCase();
       daysMap[dayNum] = cellVal;
 
-      if (cleanVal !== "W/O" && cleanVal !== "HOL" && cleanVal !== "-" && cellVal !== "") {
+      if (!isNonWorkingStatus_(cleanVal)) {
         totalWorkingDays++;
-        if (cleanVal === "P" || cleanVal === "DHL") {
+        if (isPresentStatus_(cleanVal)) {
           presentCount++;
         }
       }
@@ -414,9 +422,9 @@ function getAllEmployeesAttendanceStats(monthSheetName) {
         }
 
         var cleanVal = cellVal.toUpperCase();
-        if (cleanVal !== "W/O" && cleanVal !== "HOL" && cleanVal !== "-" && cellVal !== "") {
+        if (!isNonWorkingStatus_(cleanVal)) {
           totalWorkingDays++;
-          if (cleanVal === "P" || cleanVal === "DHL") {
+          if (isPresentStatus_(cleanVal)) {
             presentCount++;
           }
         }
@@ -564,13 +572,13 @@ function getAdminDashboardData(selectedMonth, targetDay) {
 
         var cleanStatus = status.toUpperCase();
         
-        if (status !== "" && status !== "-" && cleanStatus !== "P" && cleanStatus !== "DHL" && cleanStatus !== "W/O" && cleanStatus !== "HOL") {
+        if (!isNonWorkingStatus_(cleanStatus) && !isPresentStatus_(cleanStatus)) {
           totalAbsentCount++;
           lastStatus = cleanStatus;
           offDays.push("Date " + dateNum + " (" + status + ")");
         }
 
-        if (col === targetColIndex && status !== "" && status !== "-" && cleanStatus !== "P" && cleanStatus !== "DHL" && cleanStatus !== "W/O" && cleanStatus !== "HOL") {
+        if (col === targetColIndex && !isNonWorkingStatus_(cleanStatus) && !isPresentStatus_(cleanStatus)) {
           sameDateList.push({
             empName: empName,
             empId: empId,
