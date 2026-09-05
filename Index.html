@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATHER ENERGY // ATTENDANCE PORTAL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --ather-black: #0D0E11;
+      --ather-card: #181A20;
+      --ather-mint: #00D26A;
+      --ather-mint-glow: rgba(0, 210, 106, 0.25);
+      --ather-light-gray: #808191;
+      --text: #FFFFFF;
+      --border: rgba(255, 255, 255, 0.08);
+      --danger: #FF4242;
+      --warning: #FFB800;
+      --pink: #FF4499;
+      --info: #00B2FF;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--ather-black);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto 20px auto;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+
+    .brand-logo { display: flex; align-items: center; gap: 12px; }
+    .brand-logo h1 { font-size: 1.4rem; font-weight: 800; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+    .brand-logo span { color: var(--ather-mint); }
+
+    .pending-alert-banner {
+      background: rgba(255, 184, 0, 0.12);
+      border: 1px solid var(--warning);
+      box-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
+      border-radius: 12px;
+      padding: 14px 24px;
+      max-width: 1400px;
+      margin: 0 auto 24px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: pulse-glow 2s infinite alternate;
+    }
+
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 10px rgba(255, 184, 0, 0.2); }
+      100% { box-shadow: 0 0 22px rgba(255, 184, 0, 0.45); }
+    }
+
+    .pending-alert-content { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 0.95rem; }
+    .pending-badge-count {
+      background: var(--warning);
+      color: var(--ather-black);
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    .ather-card {
+      background: var(--ather-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    h2 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-top: 0; margin-bottom: 20px; letter-spacing: 0.5px; }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--ather-light-gray); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--ather-black);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--ather-mint); box-shadow: 0 0 10px var(--ather-mint-glow); }
+    input[readonly] { color: var(--ather-light-gray); background: rgba(255, 255, 255, 0.03); }
+
+    .ather-btn {
+      background: var(--ather-mint);
+      color: var(--ather-black);
+      border: none;
+      padding: 14px 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .ather-btn:hover { background: #00ea76; box-shadow: 0 0 20px var(--ather-mint-glow); }
+
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--text); width: auto; padding: 8px 20px; }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    .layout { display: grid; grid-template-columns: 380px 1fr; gap: 28px; max-width: 1400px; margin: 0 auto; }
+    .login-wrapper { max-width: 420px; margin: 100px auto; }
+
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+    .metric-card { background: var(--ather-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+    .metric-value { font-size: 2.2rem; font-weight: 800; color: var(--ather-mint); }
+    .metric-label { font-size: 0.75rem; color: var(--ather-light-gray); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 4px; }
+
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 15px; }
+    .day-card {
+      background: var(--ather-black);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .day-card:hover { border-color: var(--ather-mint); }
+    .day-number { font-size: 0.85rem; font-weight: 700; color: var(--ather-light-gray); }
+
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; cursor: pointer; transition: transform 0.1s; }
+    .badge:hover { transform: scale(1.1); }
+    .badge-P, .badge-DHL { background: rgba(0, 210, 106, 0.15); color: var(--ather-mint); border: 1px solid var(--ather-mint); }
+    .badge-PL { background: rgba(255, 68, 153, 0.2); color: var(--pink); border: 1px solid var(--pink); }
+    .badge-A, .badge-L { background: rgba(255, 66, 66, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-PER { background: rgba(0, 178, 255, 0.15); color: var(--info); border: 1px solid var(--info); }
+    .badge-HOL { background: rgba(255, 184, 0, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+    .badge-WO, .badge-W-O { background: rgba(0, 178, 255, 0.1); color: var(--info); border: 1px solid rgba(0, 178, 255, 0.3); }
+    .badge-EMPTY { background: rgba(255, 255, 255, 0.05); color: var(--ather-light-gray); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .badge-DEFAULT { background: rgba(168, 85, 247, 0.2); color: #a855f7; border: 1px solid #a855f7; }
+
+    .pct-box {
+      background: rgba(0, 210, 106, 0.1);
+      border: 1px solid var(--ather-mint);
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .overall-table-wrapper {
+      overflow-x: auto;
+      max-width: 100%;
+      margin-top: 15px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .overall-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    .overall-table th, .overall-table td { padding: 8px 10px; text-align: center; border: 1px solid var(--border); font-size: 0.8rem; }
+    .overall-table th { background: var(--ather-black); color: var(--ather-light-gray); position: sticky; top: 0; }
+    .overall-table td.emp-col { text-align: left; font-weight: 700; position: sticky; left: 0; background: var(--ather-card); z-index: 2; }
+
+    .stats-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .stats-table th, .stats-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .stats-table th { color: var(--ather-light-gray); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+
+    .request-item {
+      background: var(--ather-black);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-approve { background: rgba(0, 210, 106, 0.15); border: 1px solid var(--ather-mint); color: var(--ather-mint); width: auto; padding: 6px 16px; margin-right: 8px; }
+    .btn-reject { background: rgba(255, 66, 66, 0.15); border: 1px solid var(--danger); color: var(--danger); width: auto; padding: 6px 16px; }
+    .btn-approve:hover { background: var(--ather-mint); color: var(--ather-black); }
+    .btn-reject:hover { background: var(--danger); color: white; }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 999;
+    }
+    .modal-box {
+      background: var(--ather-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MODAL DIALOG FOR CELL CLICK UPDATES -->
+  <div id="cellEditModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <h2 style="margin-bottom:8px;">Update Attendance Record</h2>
+      <p style="color:var(--ather-light-gray); font-size:0.85rem; margin-top:0; margin-bottom:16px;" id="modalSubTitle"></p>
+      
+      <div class="form-group">
+        <label>Select Status Code</label>
+        <select id="modalStatusCode">
+          <option value="P">P (Present)</option>
+          <option value="PL">PL (Planned Leave)</option>
+          <option value="DHL">DHL (Duty / Half Leave)</option>
+          <option value="PER">PER (Permission)</option>
+          <option value="HOL">HOL (Company Holiday)</option>
+          <option value="A">A (Absent)</option>
+          <option value="W/o">W/o (Week Off)</option>
+          <option value="-">- (Blank / Reset)</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="ather-btn" onclick="saveModalAttendanceUpdate()">Save Status</button>
+        <button class="logout-btn" style="width:100%; padding:12px;" onclick="closeCellModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN MODULE -->
+  <div id="loginScreen" class="login-wrapper">
+    <div class="ather-card">
+      <div class="brand-logo" style="margin-bottom:24px;">
+        <h1>ATHER <span>ENERGY</span></h1>
+      </div>
+
+      <div class="form-group">
+        <label>Portal Access</label>
+        <select id="loginRole" onchange="toggleRoleFields()">
+          <option value="employee">Employee Terminal</option>
+          <option value="admin">Admin Control Hub</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="empLoginGroup">
+        <label>CT Number (Emp ID)</label>
+        <input type="text" id="loginEmpId" placeholder="e.g. CT3758">
+      </div>
+
+      <div class="form-group" id="adminLoginGroup" style="display:none;">
+        <label>Admin Passcode</label>
+        <input type="password" id="loginPin" placeholder="••••••••">
+      </div>
+
+      <button class="ather-btn" onclick="handleLogin()">Authenticate</button>
+      <div id="loginError" style="color:var(--danger); font-size:0.85rem; margin-top:14px; text-align:center; font-weight:700;"></div>
+    </div>
+  </div>
+
+  <!-- EMPLOYEE TERMINAL -->
+  <div id="employeeDashboard" style="display:none;">
+    <div class="top-nav">
+      <div class="brand-logo">
+        <h1>ATHER <span>// <span id="welcomeEmpName" style="color:white;"></span></span></h1>
+      </div>
+      <button class="ather-btn logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="layout">
+      <!-- Leave Form -->
+      <div class="ather-card">
+        <h2>Apply Leave / Permission</h2>
+        <form id="requestForm">
+          <div class="form-group">
+            <label>CT Number</label>
+            <input type="text" id="empId" readonly>
+          </div>
+
+          <div class="form-group">
+            <label>Employee Name</label>
+            <input type="text" id="empName" readonly>
+          </div>
+
+          <div class="form-group">
+            <label>Request Type</label>
+            <select id="requestType">
+              <option value="Leave">Leave Request</option>
+              <option value="Permission">Time Permission</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Start Time</label>
+            <input type="datetime-local" id="startDate" required>
+          </div>
+
+          <div class="form-group">
+            <label>End Time</label>
+            <input type="datetime-local" id="endDate" required>
+          </div>
+
+          <div class="form-group">
+            <label>Reason</label>
+            <textarea id="reason" rows="3" required></textarea>
+          </div>
+
+          <button class="ather-btn" type="submit">Submit Request</button>
+        </form>
+      </div>
+
+      <!-- Calendar Matrix -->
+      <div>
+        <div class="ather-card">
+          <h2>Attendance Matrix</h2>
+          <div style="display:flex; gap:12px; margin-bottom:20px;">
+            <select id="calMonth" style="width:160px;">
+              <option value="Sep-26">Sep-26</option>
+              <option value="Aug-26">Aug-26</option>
+              <option value="Jun-26">Jun-26</option>
+              <option value="May-26">May-26</option>
+              <option value="April-26">April-26</option>
+            </select>
+            <button class="ather-btn" onclick="loadCalendar()" style="width: auto;">View Matrix</button>
+          </div>
+
+          <div id="empPctBox" class="pct-box" style="display:none;">
+            <span style="font-weight:700; color:var(--ather-light-gray); font-size:0.85rem;">MONTHLY ATTENDANCE SCORE</span>
+            <span id="empPctValue" style="font-size:1.4rem; font-weight:800; color:var(--ather-mint);">-%</span>
+          </div>
+
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN COMMAND HUB -->
+  <div id="adminDashboard" style="display:none; max-width: 1400px; margin: 0 auto;">
+    <div class="top-nav">
+      <div class="brand-logo">
+        <h1>ATHER <span>ENERGY // ADMIN HUB</span></h1>
+      </div>
+      <button class="ather-btn logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- NOTIFICATION BANNER -->
+    <div id="topPendingBanner" class="pending-alert-banner" style="display:none;">
+      <div class="pending-alert-content">
+        <span class="pending-badge-count" id="bannerPendingCount">0</span>
+        <span>Pending Leave / Permission Request(s) Requires Action!</span>
+      </div>
+      <div>
+        <button class="ather-btn" style="width:auto; padding:8px 18px; font-size:0.8rem;" onclick="scrollToApprovals()">Review Now</button>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Personnel</div>
+        <div class="metric-value" id="totalEmpMetric">-</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Monthly Off Count</div>
+        <div class="metric-value" id="totalAbsencesMetric" style="color:var(--danger);">-</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Pending Requests</div>
+        <div class="metric-value" id="pendingCountMetric" style="color:var(--ather-mint);">-</div>
+      </div>
+    </div>
+
+    <!-- MASTER FILTER CONTROL BAR -->
+    <div class="ather-card" style="margin-bottom:28px; background: rgba(0, 210, 106, 0.05); border-color: var(--ather-mint);">
+      <h2 style="color:var(--ather-mint); margin-bottom:12px;">Master Filter & Sort Controls</h2>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1.2fr auto; gap:12px; align-items:center;">
+        <div>
+          <label>1. Target Month Sheet</label>
+          <select id="masterMonthFilter" onchange="syncMasterMonthSelect(this.value)">
+            <option value="Sep-26">Sep-26</option>
+            <option value="Aug-26">Aug-26</option>
+            <option value="Jun-26">Jun-26</option>
+            <option value="May-26">May-26</option>
+            <option value="April-26">April-26</option>
+          </select>
+        </div>
+        <div>
+          <label>2. Global Search (Name / CT Number)</label>
+          <input type="text" id="masterSearchInput" placeholder="Type name or CT..." onkeyup="applyMasterFilter()">
+        </div>
+        <div>
+          <label>3. Status Filter</label>
+          <select id="masterStatusFilter" onchange="applyMasterFilter()">
+            <option value="ALL">All Status Codes</option>
+            <option value="P">P (Present)</option>
+            <option value="PL">PL (Planned Leave)</option>
+            <option value="DHL">DHL (Duty / Half Leave)</option>
+            <option value="PER">PER (Permission)</option>
+            <option value="HOL">HOL (Company Holiday)</option>
+            <option value="A">A (Absent)</option>
+            <option value="W/O">W/o (Week Off)</option>
+          </select>
+        </div>
+        <div>
+          <label>4. Sort Matrix & Score (%)</label>
+          <select id="masterSortFilter" onchange="sortMasterTables()">
+            <option value="DEFAULT">Default Order</option>
+            <option value="NAME_ASC">Name (A to Z)</option>
+            <option value="NAME_DESC">Name (Z to A)</option>
+            <option value="SCORE_DESC">Attendance % (High to Low)</option>
+            <option value="SCORE_ASC">Absenteeism Risk % (Low to High)</option>
+          </select>
+        </div>
+        <div style="padding-top:18px;">
+          <button class="logout-btn" style="padding:12px 18px;" onclick="resetMasterFilter()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MASTER ATTENDANCE EDITOR -->
+    <div class="ather-card" style="margin-bottom:28px;">
+      <h2>Daily Master Attendance Editor</h2>
+      <div style="display:grid; grid-template-columns: 1fr 1.5fr 90px 1fr auto; gap:12px; align-items:end;">
+        <div>
+          <label>Month Sheet</label>
+          <select id="editMonthSheet">
+            <option value="Sep-26">Sep-26</option>
+            <option value="Aug-26">Aug-26</option>
+            <option value="Jun-26">Jun-26</option>
+            <option value="May-26">May-26</option>
+            <option value="April-26">April-26</option>
+          </select>
+        </div>
+        <div>
+          <label>Select Employee</label>
+          <select id="editEmpSelect"></select>
+        </div>
+        <div>
+          <label>Date Day</label>
+          <input type="number" id="editTargetDay" placeholder="e.g. 4" min="1" max="31">
+        </div>
+        <div>
+          <label>Status Code</label>
+          <select id="editStatusCode">
+            <option value="P">P (Present)</option>
+            <option value="PL">PL (Planned Leave)</option>
+            <option value="DHL">DHL (Duty / Half Leave)</option>
+            <option value="PER">PER (Permission)</option>
+            <option value="HOL">HOL (Company Holiday)</option>
+            <option value="A">A (Absent)</option>
+            <option value="W/o">W/o (Week Off)</option>
+            <option value="-">- (Blank / Reset)</option>
+          </select>
+        </div>
+        <div>
+          <button class="ather-btn" onclick="submitDailyAttendanceUpdate()">Save Record</button>
+        </div>
+      </div>
+      <div id="updateStatusMsg" style="font-size:0.85rem; font-weight:700; margin-top:12px; color:var(--ather-mint);"></div>
+    </div>
+
+    <!-- OVERALL TEAM CALENDAR GRID -->
+    <div class="ather-card" style="margin-bottom:28px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 style="margin-bottom:4px;">Overall Team Attendance Calendar Grid</h2>
+          <small style="color:var(--ather-light-gray);">Click any cell badge below to edit attendance records directly.</small>
+        </div>
+        <select id="overallCalMonth" style="width:160px;" onchange="loadOverallTeamCalendar()">
+          <option value="Sep-26">Sep-26</option>
+          <option value="Aug-26">Aug-26</option>
+          <option value="Jun-26">Jun-26</option>
+          <option value="May-26">May-26</option>
+          <option value="April-26">April-26</option>
+        </select>
+      </div>
+      <div id="overallCalendarContainer" style="margin-top:15px;">Loading Overall Calendar Grid...</div>
+    </div>
+
+    <!-- TEAM SCORE & REPORT EXPORT -->
+    <div class="ather-card" style="margin-bottom:28px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Team Attendance Percentage Score (%)</h2>
+        <div style="display:flex; gap:10px;">
+          <select id="teamStatsMonth" style="width:160px;" onchange="loadTeamAttendanceStats()">
+            <option value="Sep-26">Sep-26</option>
+            <option value="Aug-26">Aug-26</option>
+            <option value="Jun-26">Jun-26</option>
+            <option value="May-26">May-26</option>
+            <option value="April-26">April-26</option>
+          </select>
+          <button class="ather-btn" style="width:auto; padding:8px 16px;" onclick="exportReportToCSV()">Export Report (CSV)</button>
+        </div>
+      </div>
+      <div id="teamStatsContainer">Loading Team Score Matrix...</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 28px;">
+      <div class="ather-card" id="approvalsCard">
+        <h2>Pending Approvals</h2>
+        <div id="pendingList">Fetching requests...</div>
+      </div>
+
+      <div class="ather-card">
+        <h2>Leave Analytics & Tracker</h2>
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
+          <select id="analyticsMonth" style="width:150px;">
+            <option value="Sep-26">Sep-26</option>
+            <option value="Aug-26">Aug-26</option>
+            <option value="Jun-26">Jun-26</option>
+            <option value="May-26">May-26</option>
+            <option value="April-26">April-26</option>
+          </select>
+          <input type="number" id="analyticsDay" placeholder="Target Day (e.g. 4)" min="1" max="31" style="width:180px;">
+          <button class="ather-btn" onclick="loadAnalyticsData()" style="width:auto;">Scan</button>
+        </div>
+
+        <div>
+          <h3 style="font-size:0.9rem; color:var(--ather-mint);">Same-Day Off Log (Day <span id="selectedDayLabel">-</span>)</h3>
+          <div id="sameDateList" style="margin-bottom:24px;">Enter day number to scan.</div>
+
+          <h3 style="font-size:0.9rem; color:var(--ather-mint);">Personnel on Leave (Selected Month)</h3>
+          <div id="monthLeaveList">Select month to view logs.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM SECTION: DIRECTORY MANAGEMENT & PASSCODE UPDATE -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 28px; margin-bottom:28px;">
+      <!-- MASTER EMPLOYEE DIRECTORY MANAGEMENT (ADD / REMOVE) -->
+      <div class="ather-card">
+        <h2>Personnel Directory Management (Add / Remove)</h2>
+        
+        <!-- ADD FORM -->
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px;">
+          <div>
+            <label>ID</label>
+            <input type="text" id="newEmpId" placeholder="e.g. CT3758">
+          </div>
+          <div>
+            <label>Name</label>
+            <input type="text" id="newEmpName" placeholder="Murugan C">
+          </div>
+          <div>
+            <label>Contract Name</label>
+            <input type="text" id="newContractName" placeholder="Labournet">
+          </div>
+          <div>
+            <label>Staying</label>
+            <input type="text" id="newStaying" placeholder="Belagonda Palli">
+          </div>
+          <div>
+            <label>Native</label>
+            <input type="text" id="newNative" placeholder="Dharmapuri">
+          </div>
+          <div>
+            <label>DOJ</label>
+            <input type="text" id="newDOJ" placeholder="11.12.2023">
+          </div>
+          <div>
+            <label>PH-</label>
+            <input type="text" id="newPH" placeholder="9042163807">
+          </div>
+          <div>
+            <label>Reporting Manager</label>
+            <input type="text" id="newManager" placeholder="abhinav kumar">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+          <button class="ather-btn" style="width:auto; padding:12px 28px;" onclick="submitAddEmployee()">+ Add Personnel</button>
+        </div>
+
+        <div id="directoryMsg" style="font-size:0.85rem; font-weight:700; margin-bottom:12px;"></div>
+
+        <!-- DIRECTORY TABLE WITH REMOVE ACTION -->
+        <div id="employeeDirectoryContainer">Loading Directory...</div>
+      </div>
+
+      <!-- SECURITY PIN UPDATE CARD -->
+      <div class="ather-card">
+        <h2>Update Security Passcode</h2>
+        <div class="form-group">
+          <label>New Admin PIN</label>
+          <input type="password" id="newAdminPin" placeholder="Enter new passcode">
+        </div>
+        <button class="ather-btn" onclick="updateAdminPin()">Change Passcode</button>
+        <div id="pinStatusMsg" style="font-size:0.85rem; font-weight:700; margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeEmpId = "";
+    let activeEmpName = "";
+
+    let activeModalEmpId = "";
+    let activeModalEmpName = "";
+    let activeModalDay = "";
+    let activeModalMonth = "";
+
+    function setTodayDefaults() {
+      var today = new Date();
+      var dayNumber = today.getDate();
+      
+      var monthNames = ["Jan", "Feb", "Mar", "April", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      var currentMonthTab = monthNames[today.getMonth()] + "-" + today.getFullYear().toString().substring(2);
+
+      var editDayInput = document.getElementById("editTargetDay");
+      var analyticsDayInput = document.getElementById("analyticsDay");
+      
+      if (editDayInput) editDayInput.value = dayNumber;
+      if (analyticsDayInput) analyticsDayInput.value = dayNumber;
+
+      ["editMonthSheet", "overallCalMonth", "teamStatsMonth", "analyticsMonth", "calMonth", "masterMonthFilter"].forEach(id => {
+        var elem = document.getElementById(id);
+        if (elem) {
+          for (var i = 0; i < elem.options.length; i++) {
+            if (elem.options[i].value.toLowerCase() === currentMonthTab.toLowerCase()) {
+              elem.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      });
+    }
+
+    function scrollToApprovals() {
+      var elem = document.getElementById("approvalsCard");
+      if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function syncMasterMonthSelect(monthVal) {
+      document.getElementById("overallCalMonth").value = monthVal;
+      document.getElementById("teamStatsMonth").value = monthVal;
+      document.getElementById("analyticsMonth").value = monthVal;
+      document.getElementById("editMonthSheet").value = monthVal;
+
+      loadOverallTeamCalendar();
+      loadTeamAttendanceStats();
+      loadAnalyticsData();
+    }
+
+    function applyMasterFilter() {
+      var searchVal = document.getElementById("masterSearchInput").value.toLowerCase().trim();
+      var statusVal = document.getElementById("masterStatusFilter").value.toUpperCase().trim();
+
+      var calRows = document.querySelectorAll("#overallCalendarContainer tbody tr");
+      calRows.forEach(row => {
+        var nameText = row.querySelector(".emp-col").innerText.toLowerCase();
+        var matchesSearch = nameText.includes(searchVal);
+        
+        var matchesStatus = true;
+        if (statusVal !== "ALL") {
+          var badges = row.querySelectorAll(".badge");
+          var foundStatus = false;
+          badges.forEach(b => {
+            if (b.innerText.toUpperCase().replace("/", "-") === statusVal.replace("/", "-")) {
+              foundStatus = true;
+            }
+          });
+          matchesStatus = foundStatus;
+        }
+
+        row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+      });
+
+      var scoreRows = document.querySelectorAll("#teamStatsContainer tbody tr");
+      scoreRows.forEach(row => {
+        var rowText = row.innerText.toLowerCase();
+        row.style.display = rowText.includes(searchVal) ? "" : "none";
+      });
+    }
+
+    function sortMasterTables() {
+      var sortType = document.getElementById("masterSortFilter").value;
+
+      var scoreTbody = document.querySelector("#teamStatsContainer tbody");
+      if (scoreTbody) {
+        var scoreRows = Array.from(scoreTbody.querySelectorAll("tr"));
+        scoreRows.sort((a, b) => {
+          var nameA = a.children[0].innerText.toLowerCase();
+          var nameB = b.children[0].innerText.toLowerCase();
+          var scoreA = parseFloat(a.children[3].innerText.replace("%", "")) || 0;
+          var scoreB = parseFloat(b.children[3].innerText.replace("%", "")) || 0;
+
+          if (sortType === "NAME_ASC") return nameA.localeCompare(nameB);
+          if (sortType === "NAME_DESC") return nameB.localeCompare(nameA);
+          if (sortType === "SCORE_DESC") return scoreB - scoreA;
+          if (sortType === "SCORE_ASC") return scoreA - scoreB;
+          return 0;
+        });
+        scoreRows.forEach(r => scoreTbody.appendChild(r));
+      }
+
+      var calTbody = document.querySelector("#overallCalendarContainer tbody");
+      if (calTbody) {
+        var calRows = Array.from(calTbody.querySelectorAll("tr"));
+        calRows.sort((a, b) => {
+          var nameA = a.querySelector(".emp-col").innerText.toLowerCase();
+          var nameB = b.querySelector(".emp-col").innerText.toLowerCase();
+
+          if (sortType === "NAME_ASC") return nameA.localeCompare(nameB);
+          if (sortType === "NAME_DESC") return nameB.localeCompare(nameA);
+          return 0;
+        });
+        calRows.forEach(r => calTbody.appendChild(r));
+      }
+
+      applyMasterFilter();
+    }
+
+    function resetMasterFilter() {
+      document.getElementById("masterSearchInput").value = "";
+      document.getElementById("masterStatusFilter").value = "ALL";
+      document.getElementById("masterSortFilter").value = "DEFAULT";
+      applyMasterFilter();
+    }
+
+    function toggleRoleFields() {
+      var role = document.getElementById("loginRole").value;
+      document.getElementById("empLoginGroup").style.display = role === "employee" ? "block" : "none";
+      document.getElementById("adminLoginGroup").style.display = role === "admin" ? "block" : "none";
+      document.getElementById("loginError").innerText = "";
+    }
+
+    function handleLogin() {
+      var role = document.getElementById("loginRole").value;
+      var empId = document.getElementById("loginEmpId").value.trim();
+      var pin = document.getElementById("loginPin").value.trim();
+      var errorDiv = document.getElementById("loginError");
+
+      errorDiv.innerText = "Authenticating...";
+
+      google.script.run.withSuccessHandler(res => {
+        if (!res.success) {
+          errorDiv.innerText = res.message;
+          return;
+        }
+
+        document.getElementById("loginScreen").style.display = "none";
+        setTodayDefaults();
+
+        if (res.role === "employee") {
+          activeEmpId = res.empId;
+          activeEmpName = res.name;
+          
+          document.getElementById("welcomeEmpName").innerText = activeEmpName;
+          document.getElementById("empId").value = activeEmpId;
+          document.getElementById("empName").value = activeEmpName;
+          document.getElementById("employeeDashboard").style.display = "block";
+          
+          loadCalendar();
+        } else if (res.role === "admin") {
+          document.getElementById("adminDashboard").style.display = "block";
+          populateAdminEmpDropdown();
+          loadEmployeeDirectory();
+          loadOverallTeamCalendar();
+          loadAdminApprovals();
+          loadAnalyticsData();
+          loadTeamAttendanceStats();
+        }
+      }).loginUser(role, pin, empId);
+    }
+
+    function logout() {
+      document.getElementById("loginScreen").style.display = "block";
+      document.getElementById("employeeDashboard").style.display = "none";
+      document.getElementById("adminDashboard").style.display = "none";
+      document.getElementById("loginError").innerText = "";
+    }
+
+    function updateAdminPin() {
+      var pin = document.getElementById("newAdminPin").value.trim();
+      var msg = document.getElementById("pinStatusMsg");
+      if(!pin) { alert("Enter new PIN!"); return; }
+
+      google.script.run.withSuccessHandler(res => {
+        msg.innerText = res;
+        msg.style.color = "var(--ather-mint)";
+        document.getElementById("newAdminPin").value = "";
+      }).setAdminPin(pin);
+    }
+
+    function populateAdminEmpDropdown() {
+      google.script.run.withSuccessHandler(list => {
+        var select = document.getElementById("editEmpSelect");
+        select.innerHTML = "";
+        list.forEach(emp => {
+          select.innerHTML += `<option value="${emp.empId}">${emp.name} (${emp.empId})</option>`;
+        });
+      }).getMasterEmployeeList();
+    }
+
+    /* Master Employee Directory Handlers (Add & Remove) */
+    function loadEmployeeDirectory() {
+      var container = document.getElementById("employeeDirectoryContainer");
+      container.innerHTML = "<p style='color:var(--ather-light-gray);'>Loading Directory...</p>";
+
+      google.script.run.withSuccessHandler(list => {
+        if (!list || list.length === 0) {
+          container.innerHTML = "<p style='color:var(--ather-mint);'>No employees in directory.</p>";
+          return;
+        }
+
+        var html = `
+          <div class="overall-table-wrapper">
+            <table class="overall-table">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Contract Name</th>
+                  <th>Staying</th>
+                  <th>Native</th>
+                  <th>DOJ</th>
+                  <th>PH-</th>
+                  <th>Reporting Manager</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        list.forEach(emp => {
+          var safeName = emp.name.replace(/'/g, "\\'");
+          html += `
+            <tr>
+              <td>
+                <button class="logout-btn" style="padding:4px 10px; font-size:0.75rem; border-color:var(--danger); color:var(--danger);" onclick="submitRemoveEmployee('${emp.empId}', '${safeName}')">Remove</button>
+              </td>
+              <td><strong>${emp.empId}</strong></td>
+              <td>${emp.name}</td>
+              <td>${emp.contractName}</td>
+              <td>${emp.staying}</td>
+              <td>${emp.nativePlace}</td>
+              <td>${emp.doj}</td>
+              <td>${emp.ph}</td>
+              <td>${emp.reportingManager}</td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+      }).getFullEmployeeRecords();
+    }
+
+    function submitAddEmployee() {
+      var data = {
+        empId: document.getElementById("newEmpId").value.trim(),
+        name: document.getElementById("newEmpName").value.trim(),
+        contractName: document.getElementById("newContractName").value.trim(),
+        staying: document.getElementById("newStaying").value.trim(),
+        nativePlace: document.getElementById("newNative").value.trim(),
+        doj: document.getElementById("newDOJ").value.trim(),
+        ph: document.getElementById("newPH").value.trim(),
+        reportingManager: document.getElementById("newManager").value.trim()
+      };
+
+      if (!data.empId || !data.name) {
+        alert("Please enter Employee ID and Name!");
+        return;
+      }
+
+      var msgDiv = document.getElementById("directoryMsg");
+      msgDiv.innerText = "Adding employee...";
+      msgDiv.style.color = "var(--ather-mint)";
+
+      google.script.run.withSuccessHandler(res => {
+        msgDiv.innerText = res.message;
+        msgDiv.style.color = res.success ? "var(--ather-mint)" : "var(--danger)";
+        if (res.success) {
+          document.getElementById("newEmpId").value = "";
+          document.getElementById("newEmpName").value = "";
+          document.getElementById("newContractName").value = "";
+          document.getElementById("newStaying").value = "";
+          document.getElementById("newNative").value = "";
+          document.getElementById("newDOJ").value = "";
+          document.getElementById("newPH").value = "";
+          document.getElementById("newManager").value = "";
+          
+          loadEmployeeDirectory();
+          populateAdminEmpDropdown();
+        }
+      }).addEmployee(data);
+    }
+
+    function submitRemoveEmployee(empId, empName) {
+      if (!confirm(`Are you sure you want to remove ${empName} (${empId})?`)) return;
+
+      var msgDiv = document.getElementById("directoryMsg");
+      msgDiv.innerText = "Removing employee...";
+      msgDiv.style.color = "var(--warning)";
+
+      google.script.run.withSuccessHandler(res => {
+        msgDiv.innerText = res.message;
+        msgDiv.style.color = res.success ? "var(--ather-mint)" : "var(--danger)";
+        loadEmployeeDirectory();
+        populateAdminEmpDropdown();
+      }).removeEmployee(empId);
+    }
+
+    function submitDailyAttendanceUpdate() {
+      var month = document.getElementById("editMonthSheet").value;
+      var empId = document.getElementById("editEmpSelect").value;
+      var day = document.getElementById("editTargetDay").value;
+      var status = document.getElementById("editStatusCode").value;
+      var msgDiv = document.getElementById("updateStatusMsg");
+
+      if (!day) {
+        day = new Date().getDate();
+        document.getElementById("editTargetDay").value = day;
+      }
+
+      msgDiv.innerText = "Updating sheet for Day " + day + "...";
+      msgDiv.style.color = "var(--ather-mint)";
+
+      google.script.run.withSuccessHandler(resMsg => {
+        msgDiv.innerText = resMsg;
+        loadOverallTeamCalendar();
+        loadTeamAttendanceStats();
+        loadAnalyticsData();
+      }).updateDailyAttendance(month, empId, day, status);
+    }
+
+    function openCellModal(empName, empId, day, currentStatus) {
+      activeModalEmpId = empId;
+      activeModalEmpName = empName;
+      activeModalDay = day;
+      activeModalMonth = document.getElementById("overallCalMonth").value;
+
+      document.getElementById("modalSubTitle").innerText = `${empName} (${empId}) - Day ${day} [${activeModalMonth}]`;
+      
+      var select = document.getElementById("modalStatusCode");
+      for (var i = 0; i < select.options.length; i++) {
+        if (select.options[i].value.toUpperCase() === currentStatus.toUpperCase()) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+
+      document.getElementById("cellEditModal").style.display = "flex";
+    }
+
+    function closeCellModal() {
+      document.getElementById("cellEditModal").style.display = "none";
+    }
+
+    function saveModalAttendanceUpdate() {
+      var newStatus = document.getElementById("modalStatusCode").value;
+      closeCellModal();
+
+      google.script.run.withSuccessHandler(resMsg => {
+        alert(resMsg);
+        loadOverallTeamCalendar();
+        loadTeamAttendanceStats();
+        loadAnalyticsData();
+      }).updateDailyAttendance(activeModalMonth, activeModalEmpId, activeModalDay, newStatus);
+    }
+
+    document.getElementById("requestForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      var payload = {
+        empId: activeEmpId,
+        empName: activeEmpName,
+        requestType: document.getElementById("requestType").value,
+        startDate: document.getElementById("startDate").value,
+        endDate: document.getElementById("endDate").value,
+        reason: document.getElementById("reason").value
+      };
+
+      google.script.run.withSuccessHandler(msg => {
+        alert(msg);
+        document.getElementById("reason").value = "";
+      }).submitRequest(payload);
+    });
+
+    function loadCalendar() {
+      var month = document.getElementById("calMonth").value;
+      var grid = document.getElementById("calendarGrid");
+      grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color:var(--ather-mint);">Loading Matrix...</div>`;
+
+      google.script.run.withSuccessHandler(res => {
+        if(!res.success) {
+          grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--danger); padding: 40px;">${res.message}</div>`;
+          return;
+        }
+
+        document.getElementById("empPctBox").style.display = "flex";
+        document.getElementById("empPctValue").innerText = res.percentage + "%";
+
+        grid.innerHTML = "";
+        Object.keys(res.attendance).forEach(day => {
+          var rawStatus = res.attendance[day];
+          var badgeClass = "badge-EMPTY";
+          var displayTag = "-";
+
+          if (rawStatus && rawStatus !== "") {
+            displayTag = rawStatus;
+            var cleanTag = rawStatus.toUpperCase().replace("/", "-");
+            if (["P", "PL", "DHL", "A", "L", "PER", "HOL", "WO", "W-O"].includes(cleanTag)) {
+              badgeClass = "badge-" + cleanTag;
+            } else {
+              badgeClass = "badge-DEFAULT";
+            }
+          }
+
+          grid.innerHTML += `
+            <div class="day-card">
+              <div class="day-number">DAY ${day}</div>
+              <div><span class="badge ${badgeClass}">${displayTag}</span></div>
+            </div>
+          `;
+        });
+      }).getCalendarData(activeEmpId, month);
+    }
+
+    function loadOverallTeamCalendar() {
+      var month = document.getElementById("overallCalMonth").value;
+      var container = document.getElementById("overallCalendarContainer");
+      container.innerHTML = "<p style='color:var(--ather-light-gray);'>Rendering Overall Calendar...</p>";
+
+      google.script.run.withSuccessHandler(res => {
+        if (!res.success) {
+          container.innerHTML = `<p style="color:var(--danger);">${res.message}</p>`;
+          return;
+        }
+
+        var html = `<div class="overall-table-wrapper"><table class="overall-table"><thead><tr><th class="emp-col">Employee Name</th>`;
+        res.days.forEach(day => { html += `<th>${day}</th>`; });
+        html += `</tr></thead><tbody>`;
+
+        res.teamData.forEach(row => {
+          html += `<tr><td class="emp-col">${row.empName} <small style="color:var(--ather-light-gray);">(${row.empId})</small></td>`;
+          res.days.forEach(day => {
+            var raw = row.dailyStatus[day] || "-";
+            var cleanTag = raw.toUpperCase().replace("/", "-");
+            var badgeClass = ["P", "PL", "DHL", "A", "L", "PER", "HOL", "WO", "W-O"].includes(cleanTag) ? "badge-" + cleanTag : (raw !== "-" ? "badge-DEFAULT" : "badge-EMPTY");
+            
+            var safeName = row.empName.replace(/'/g, "\\'");
+            html += `<td><span class="badge ${badgeClass}" onclick="openCellModal('${safeName}', '${row.empId}', '${day}', '${raw}')">${raw}</span></td>`;
+          });
+          html += `</tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+        sortMasterTables();
+      }).getOverallTeamCalendar(month);
+    }
+
+    function loadTeamAttendanceStats() {
+      var month = document.getElementById("teamStatsMonth").value;
+      var container = document.getElementById("teamStatsContainer");
+      container.innerHTML = "<p style='color:var(--ather-light-gray);'>Calculating team scores...</p>";
+
+      google.script.run.withSuccessHandler(res => {
+        if (!res.success) {
+          container.innerHTML = `<p style="color:var(--danger);">${res.message}</p>`;
+          return;
+        }
+
+        var html = `
+          <table class="stats-table" id="teamScoreTable">
+            <thead>
+              <tr>
+                <th>Employee Name</th>
+                <th>Emp ID</th>
+                <th>Present / Working</th>
+                <th>Attendance Score (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        res.list.forEach(item => {
+          var scoreColor = item.percentage >= 85 ? "var(--ather-mint)" : (item.percentage >= 70 ? "var(--warning)" : "var(--danger)");
+          html += `
+            <tr>
+              <td><strong>${item.empName}</strong></td>
+              <td>${item.empId}</td>
+              <td>${item.present} / ${item.workingDays} Days</td>
+              <td style="font-weight:800; color:${scoreColor}; font-size:1rem;">${item.percentage}%</td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        sortMasterTables();
+      }).getAllEmployeesAttendanceStats(month);
+    }
+
+    function exportReportToCSV() {
+      var month = document.getElementById("teamStatsMonth").value;
+      google.script.run.withSuccessHandler(res => {
+        if (!res.success) return;
+        var csv = "Employee Name,Emp ID,Present Days,Working Days,Score (%)\n";
+        res.list.forEach(i => {
+          csv += `"${i.empName}","${i.empId}",${i.present},${i.workingDays},${i.percentage}%\n`;
+        });
+
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `Attendance_Report_${month}.csv`;
+        link.click();
+      }).getAllEmployeesAttendanceStats(month);
+    }
+
+    function loadAdminApprovals() {
+      var list = document.getElementById("pendingList");
+      list.innerHTML = "<p style='color:var(--ather-light-gray);'>Fetching requests...</p>";
+
+      google.script.run.withSuccessHandler(requests => {
+        var count = requests ? requests.length : 0;
+        document.getElementById("pendingCountMetric").innerText = count;
+
+        var topBanner = document.getElementById("topPendingBanner");
+        var bannerCount = document.getElementById("bannerPendingCount");
+
+        if (count > 0) {
+          topBanner.style.display = "flex";
+          bannerCount.innerText = count;
+        } else {
+          topBanner.style.display = "none";
+        }
+
+        if (!requests || requests.length === 0) {
+          list.innerHTML = "<p style='color:var(--ather-mint); font-weight:700;'>All queues clear. No pending requests.</p>";
+          return;
+        }
+
+        list.innerHTML = "";
+        requests.forEach(req => {
+          list.innerHTML += `
+            <div class="request-item">
+              <div>
+                <strong>${req.empName} (${req.empId})</strong> - <span style="color:var(--ather-mint);">${req.type}</span><br>
+                <small style="color:var(--ather-light-gray);">${req.startDate} to ${req.endDate}</small><br>
+                <small>Reason: ${req.reason}</small>
+              </div>
+              <div style="min-width: 140px; text-align: right;">
+                <button class="ather-btn btn-approve" onclick="processApproval('${req.sheetName}', ${req.rowIndex}, 'Approved')">Approve</button>
+                <button class="ather-btn btn-reject" onclick="processApproval('${req.sheetName}', ${req.rowIndex}, 'Rejected')">Reject</button>
+              </div>
+            </div>
+          `;
+        });
+      }).getPendingRequests();
+    }
+
+    function processApproval(sheetName, rowIndex, status) {
+      google.script.run.withSuccessHandler(msg => {
+        alert(msg);
+        loadAdminApprovals();
+        loadTeamAttendanceStats();
+        loadOverallTeamCalendar();
+      }).processApproval(sheetName, rowIndex, status);
+    }
+
+    function loadAnalyticsData() {
+      var month = document.getElementById("analyticsMonth").value;
+      var day = document.getElementById("analyticsDay").value;
+      document.getElementById("selectedDayLabel").innerText = day || "-";
+
+      google.script.run.withSuccessHandler(data => {
+        document.getElementById("totalEmpMetric").innerText = data.totalEmployees;
+        document.getElementById("totalAbsencesMetric").innerText = data.totalAbsences;
+
+        var sameDateDiv = document.getElementById("sameDateList");
+        if (!day) {
+          sameDateDiv.innerHTML = "<small style='color:var(--ather-light-gray);'>Enter target day number to scan.</small>";
+        } else if (data.sameDateList.length === 0) {
+          sameDateDiv.innerHTML = "<p style='color:var(--ather-mint); font-size:0.85rem;'>0 Personnel Absent on Day " + day + ".</p>";
+        } else {
+          sameDateDiv.innerHTML = "";
+          data.sameDateList.forEach(item => {
+            sameDateDiv.innerHTML += `
+              <div style="padding: 10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem;">
+                <strong>${item.empName} (${item.empId})</strong> - <span class="badge badge-${item.status}">${item.status}</span><br>
+                <small style="color:var(--ather-light-gray);">Reason: ${item.reason}</small>
+              </div>
+            `;
+          });
+        }
+
+        var monthLeaveDiv = document.getElementById("monthLeaveList");
+        if (data.leaveList.length === 0) {
+          monthLeaveDiv.innerHTML = "<p style='color:var(--ather-mint); font-size:0.85rem;'>Zero leave records in " + month + ".</p>";
+        } else {
+          monthLeaveDiv.innerHTML = "";
+          data.leaveList.forEach(item => {
+            var isPermission = item.category.includes("Permission");
+            var badgeStyle = isPermission 
+              ? "background:rgba(0, 178, 255, 0.15); color:var(--info); border:1px solid var(--info);" 
+              : "background:rgba(255, 66, 66, 0.15); color:var(--danger); border:1px solid var(--danger);";
+
+            monthLeaveDiv.innerHTML += `
+              <div style="padding: 12px; border-bottom:1px solid var(--border); font-size:0.85rem; background:rgba(0,0,0,0.2); margin-bottom:8px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong>${item.empName} (${item.empId})</strong>
+                  <span class="badge" style="${badgeStyle}">${item.category}</span>
+                </div>
+                <div style="color:var(--ather-mint); font-weight:600; font-size:0.8rem;">Dates: ${item.days}</div>
+                <div style="color:var(--ather-light-gray); font-size:0.8rem; margin-top:2px;">Reason: ${item.reason}</div>
+              </div>
+            `;
+          });
+        }
+      }).getAdminDashboardData(month, day);
+    }
+  </script>
+</body>
+</html>
