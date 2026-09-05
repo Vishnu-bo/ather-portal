@@ -4,6 +4,11 @@ function getSpreadsheet_() {
   return SpreadsheetApp.getActiveSpreadsheet();
 }
 
+function getEmployeeSheet_() {
+  var spreadsheet = getSpreadsheet_();
+  return spreadsheet.getSheetByName("Associate Details") || spreadsheet.getSheetByName("Master Sheet");
+}
+
 function normalizeText_(value) {
   return value === null || value === undefined ? "" : String(value).trim();
 }
@@ -75,7 +80,7 @@ function loginUser(role, pin, empId) {
   } else if (role === "employee") {
     if (!normalizeEmployeeId_(empId)) return { success: false, message: "Enter your Employee ID." };
     var details = getEmployeeDetails(empId);
-    return details.found ? { success: true, role: "employee", empId: empId, name: details.name, email: details.email } : { success: false, message: "Emp ID not found in Master Sheet!" };
+    return details.found ? { success: true, role: "employee", empId: empId, name: details.name, email: details.email } : { success: false, message: "Emp ID not found in Associate Details!" };
   }
   return { success: false, message: "Invalid login role." };
 }
@@ -110,7 +115,7 @@ function getEmployeeDetails(empId) {
   empId = normalizeEmployeeId_(empId);
   if (!empId) return { found: false, name: '', email: '' };
 
-  var sheet = getSpreadsheet_().getSheetByName("Master Sheet");
+  var sheet = getEmployeeSheet_();
   if (!sheet) return { found: false, name: '', email: '' };
   
   var lastRow = sheet.getLastRow();
@@ -127,7 +132,7 @@ function getEmployeeDetails(empId) {
 
 // 3. Fetch Full Employee Records List for Admin Panel
 function getFullEmployeeRecords() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Master Sheet");
+  var sheet = getEmployeeSheet_();
   if (!sheet) return [];
 
   var lastRow = sheet.getLastRow();
@@ -162,8 +167,8 @@ function addEmployee(data) {
   if (empId.length > 50 || name.length > 100) return { success: false, message: "Employee ID or name is too long." };
 
   return withSheetLock_(function() {
-    var sheet = getSpreadsheet_().getSheetByName("Master Sheet");
-    if (!sheet) return { success: false, message: "Master Sheet tab not found!" };
+    var sheet = getEmployeeSheet_();
+    if (!sheet) return { success: false, message: "Associate Details tab not found!" };
     if (findEmployeeRow_(sheet, empId) !== -1) {
       return { success: false, message: "Employee ID (" + empId + ") already exists!" };
     }
@@ -188,8 +193,8 @@ function removeEmployee(empId) {
   if (!empId) return { success: false, message: "Employee ID is required." };
 
   return withSheetLock_(function() {
-    var sheet = getSpreadsheet_().getSheetByName("Master Sheet");
-    if (!sheet) return { success: false, message: "Master Sheet tab not found!" };
+    var sheet = getEmployeeSheet_();
+    if (!sheet) return { success: false, message: "Associate Details tab not found!" };
     var row = findEmployeeRow_(sheet, empId);
     if (row === -1) return { success: false, message: "Employee ID " + empId + " not found." };
     sheet.deleteRow(row);
@@ -516,7 +521,7 @@ function processApproval(sheetName, rowIndex, status) {
 // 14. Admin Analytics
 function getAdminDashboardData(selectedMonth, targetDay) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var masterSheet = ss.getSheetByName("Master Sheet");
+  var masterSheet = getEmployeeSheet_();
   var monthSheet = ss.getSheetByName(selectedMonth);
 
   var totalEmployees = masterSheet ? (masterSheet.getLastRow() - 1) : 0;
